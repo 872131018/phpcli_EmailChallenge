@@ -7,3 +7,7 @@ and create a single output file containing the
 #subject for each of the messages processed.
 
 During the onsite interview, I will provide a different message archive for you to process using your code.
+
+
+# this is for easy cleanup between runs
+rm -rf email_archive/ sampleEmails.tar
