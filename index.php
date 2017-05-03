@@ -6,6 +6,7 @@
     * Look through files for an archive
     */
     $files_in_directory = scandir(getcwd());
+    $root_directory = getcwd();
     /**
     * Search for an archive with .tar.gz
     */
@@ -101,7 +102,9 @@
                 /**
                 * @TODO: per spec push into a file in a meaningful way
                 */
-                print_r($final_output);
+                $output = fopen($root_directory."/processedEmailData.json", "w");
+                fwrite($output, json_encode($final_output, JSON_PRETTY_PRINT));
+                fclose($output);
 
             } catch(Exception $e) {
                 echo 'Error Encountered!!!';
