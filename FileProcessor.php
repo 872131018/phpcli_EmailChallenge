@@ -8,15 +8,15 @@ class FileProcessor {
         $this->root_directory = $root;
     }
     /**
-    * Look through files for an archive
+    * Convert email archive to readable json output with data
     */
     public function processFiles() {
         /**
-        * Search for an archive with .tar.gz
+        * Browse current directory for the archive
         */
         foreach($this->files_in_directory as $index => $file) {
             /**
-            * Know from supplied file this is a possible filetype
+            * Check for file archive
             */
             if($this->fileArchiveCheck($file)) {
                 /**
@@ -29,87 +29,50 @@ class FileProcessor {
                     */
                     $archive->decompress()->extractTo('email_archive');
                     /**
-                    * On successful archive go into archive directory
+                    * On successful extract go into archive directory
                     */
                     chdir('email_archive');
                     /**
-                    * Look for a folder containing email archives
+                    * Extracted archive could have a different name than .tar file
                     */
                     $files_in_directory = scandir(getcwd());
                     /**
-                    * Go into email directory
+                    * Name agnostic way to get into files after extraction
                     */
                     foreach ($files_in_directory as $index => $file) {
+                        /**
+                        * Go into archive and prepare to process
+                        */
                         if($file != '.' && $file != '..') {
                             chdir($file);
-                            break;
-                        }
-                    }
-                    /**
-                    * Get array of archived emails to parse
-                    */
-                    $files_in_directory = scandir(getcwd());
-                    $archived_emails = [];
-                    /**
-                    * Go into email directory
-                    */
-                    foreach ($files_in_directory as $index => $file) {
-                        if(strpos($file, '.msg')) {
-                            array_push($archived_emails, $file);
-                        }
-                    }
-                    /**
-                    * Now process each email and get
-                    */
-                    $final_output = [];
-                    foreach ($archived_emails as $index => $file) {
-                        /**
-                        * Open a file for reading
-                        */
-                        $open_file = fopen($file,"r");
-                        $date = '';
-                        $sender = '';
-                        $subject = '';
-                        while(!feof($open_file)) {
                             /**
-                            * Get a line to look for a piece of data
+                            * Get array of files in archive
                             */
-                            $current_line = fgets($open_file);
+                            $files_in_directory = scandir(getcwd());
                             /**
-                            * Date: at 0 should indicate sending date
+                            * Create list of email files to process
                             */
-                            if(strpos($current_line, 'Date:') === 0) {
-                                $date = $current_line;
+                            $archived_emails = [];
+                            foreach ($files_in_directory as $index => $file) {
+                                if(strpos($file, '.msg')) {
+                                    array_push($archived_emails, $file);
+                                }
                             }
-                            if(strpos($current_line, 'From:') === 0) {
-                                $sender = $current_line;
+                            /**
+                            * Now process each email and get
+                            */
+                            $final_output = [];
+                            foreach ($archived_emails as $index => $file) {
+                                array_push($final_output, $this->processFile($file));
                             }
-                            if(strpos($current_line, 'Subject:') === 0) {
-                                $subject = $current_line;
-                            }
+                            /**
+                            * @TODO: per spec push into a file in a meaningful way
+                            */
+                            $json_file = fopen($this->root_directory."/processedEmailData.json", "w");
+                            fwrite($json_file, json_encode($final_output, JSON_PRETTY_PRINT));
+                            fclose($json_file);
                         }
-                        /**
-                        * Close the open file after reading
-                        */
-                        fclose($open_file);
-                        /**
-                        * Push data into final output
-                        */
-                        array_push($final_output, [
-                            $file => [
-                                'date' => $date,
-                                'sender' => $sender,
-                                'subject' => $subject
-                            ]
-                        ]);
                     }
-                    /**
-                    * @TODO: per spec push into a file in a meaningful way
-                    */
-                    $output = fopen($root_directory."/processedEmailData.json", "w");
-                    fwrite($output, json_encode($final_output, JSON_PRETTY_PRINT));
-                    fclose($output);
-
                 } catch(Exception $e) {
                     echo 'Error Encountered!!!';
                     echo PHP_EOL;
@@ -118,11 +81,58 @@ class FileProcessor {
             }
         }
     }
-
+    /**
+    * Function to check for variations of archive file type
+    */
     private function fileArchiveCheck($filename) {
         /**
         * Could check for other formats here
         */
-        return strpos($file, '.tar.gz');
+        return strpos($filename, '.tar.gz');
+    }
+    /**
+    * Logic for processing files
+    */
+    private function processFile($file) {
+        /**
+        * Open a file for reading
+        */
+        $open_file = fopen($file, "r");
+        $date = '';
+        $sender = '';
+        $subject = '';
+        while(!feof($open_file)) {
+            /**
+            * Get a line to look for a piece of data
+            */
+            $current_line = fgets($open_file);
+            /**
+            * Date:, From:, or Subject: at 0 should indicate relevant data
+            */
+            if(strpos($current_line, 'Date:') === 0) {
+                $date = $current_line;
+            }
+            if(strpos($current_line, 'From:') === 0) {
+                $sender = $current_line;
+            }
+            if(strpos($current_line, 'Subject:') === 0) {
+                $subject = $current_line;
+            }
+        }
+        /**
+        * Close the open file after reading
+        */
+        fclose($open_file);
+        /**
+        * Push data into final output
+        */
+        $output =  [
+            $file => [
+                'date' => $date,
+                'sender' => $sender,
+                'subject' => $subject
+            ]
+        ];
+        return $output;
     }
 }
