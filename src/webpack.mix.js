@@ -20,6 +20,7 @@ mix.js('resources/assets/js/app.js', 'public/js')
 */
 mix.combine([
     'node_modules/w3-css/w3.css',
+    'node_modules/dropzone/dist/min/dropzone.min.css',
     'resources/stylesheets/frontend/loader.styles.css',
 ], 'public/stylesheets/frontend.css');
 /**

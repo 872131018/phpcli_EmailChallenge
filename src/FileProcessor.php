@@ -93,7 +93,7 @@ class FileProcessor {
     /**
     * Logic for processing files
     */
-    private function processFile($file) {
+    public function processFile($file) {
         /**
         * Open a file for reading
         */

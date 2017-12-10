@@ -17,15 +17,6 @@ class App extends React.Component {
 
     componentDidMount() {
         console.log("App Mounted!");
-
-        // @TODO analytic component mounting twice :/
-        //store.dispatch({ type: 'SERVICE_LOADING' });
-        /*
-        axios.get('/tool/find').then(response => {
-            store.dispatch({ type: 'SET_TOOLS', data: response.data });
-            store.dispatch({ type: 'SERVICE_FINISHED' });
-        });
-        */
     }
 
     render() {

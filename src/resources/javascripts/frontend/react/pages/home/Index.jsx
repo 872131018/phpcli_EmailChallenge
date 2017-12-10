@@ -1,8 +1,17 @@
 import React from 'react';
+import Dropzone from 'dropzone';
 
 class Page extends React.Component {
     constructor(props) {
         super(props);
+    }
+
+    componentDidMount() {
+        Dropzone.autoDiscover = false;
+        var dz = new Dropzone('.dropzone');
+        dz.on('success', function(file, response) {
+            console.log(response)
+        });
     }
 
     render() {
@@ -14,9 +23,7 @@ class Page extends React.Component {
                 <div style={{ marginLeft: '33%' }}>
                     <header className="w3-center">
                         <p>Upload a file to see its data.</p>
-                        <button className="w3-button w3-light-grey w3-padding-large w3-margin-top">
-                            <i className="fa fa-download"></i> Download Resume
-                        </button>
+                        <form className="dropzone" method="POST" action="/index.php"/>
                     </header>
                 </div>
             </div>

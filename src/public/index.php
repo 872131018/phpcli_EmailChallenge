@@ -4,8 +4,12 @@
     */
     require('../FileProcessor.php');
 
-    echo 'Starting Execution...';
-    echo PHP_EOL;
+    if(!empty($_FILES)) {
+        $file = $_FILES['file']['tmp_name'];
 
-    $fileProcessor = new FileProcessor(getcwd(), getcwd());
-    $fileProcessor->processFiles();
+        $fileProcessor = new FileProcessor(getcwd(), getcwd());
+        $data = $fileProcessor->processFile($file);
+
+        echo json_encode($data);
+        return;
+    }
