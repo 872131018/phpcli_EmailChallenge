@@ -4657,11 +4657,14 @@ module.exports = function spread(callback) {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_redux__ = __webpack_require__(27);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__reducers_services_redux__ = __webpack_require__(86);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__reducers_email_redux__ = __webpack_require__(142);
+
 
 
 
 var reducers = Object(__WEBPACK_IMPORTED_MODULE_0_redux__["b" /* combineReducers */])({
-    ServiceStore: __WEBPACK_IMPORTED_MODULE_1__reducers_services_redux__["a" /* default */]
+    ServiceStore: __WEBPACK_IMPORTED_MODULE_1__reducers_services_redux__["a" /* default */],
+    EmailStore: __WEBPACK_IMPORTED_MODULE_2__reducers_email_redux__["a" /* default */]
 });
 
 /* harmony default export */ __webpack_exports__["a"] = (Object(__WEBPACK_IMPORTED_MODULE_0_redux__["c" /* createStore */])(reducers));
@@ -26831,8 +26834,10 @@ var Loading = function (_React$Component) {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_dropzone__ = __webpack_require__(141);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_dropzone___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_dropzone__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_redux__ = __webpack_require__(36);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_dropzone__ = __webpack_require__(141);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_dropzone___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_dropzone__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Email__ = __webpack_require__(143);
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -26844,27 +26849,51 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 
 
+
+
+var props = function props(store) {
+    return {
+        emails: store.EmailStore.emails
+    };
+};
+
 var Page = function (_React$Component) {
     _inherits(Page, _React$Component);
 
     function Page(props) {
         _classCallCheck(this, Page);
 
-        return _possibleConstructorReturn(this, (Page.__proto__ || Object.getPrototypeOf(Page)).call(this, props));
+        var _this = _possibleConstructorReturn(this, (Page.__proto__ || Object.getPrototypeOf(Page)).call(this, props));
+
+        _this.clear = _this.clear.bind(_this);
+        return _this;
     }
 
     _createClass(Page, [{
         key: 'componentDidMount',
         value: function componentDidMount() {
-            __WEBPACK_IMPORTED_MODULE_1_dropzone___default.a.autoDiscover = false;
-            var dz = new __WEBPACK_IMPORTED_MODULE_1_dropzone___default.a('.dropzone');
-            dz.on('success', function (file, response) {
-                console.log(response);
+            __WEBPACK_IMPORTED_MODULE_2_dropzone___default.a.autoDiscover = false;
+            var dz = new __WEBPACK_IMPORTED_MODULE_2_dropzone___default.a('.dropzone');
+            dz.on('sending', function (request, data) {
+                store.dispatch({ type: 'SERVICE_LOADING' });
             });
+            dz.on('success', function (file, response) {
+                store.dispatch({ type: 'SERVICE_FINISHED' });
+                store.dispatch({ type: 'SET_EMAIL', data: JSON.parse(response) });
+            });
+        }
+    }, {
+        key: 'clear',
+        value: function clear() {
+            store.dispatch({ type: 'CLEAR_EMAILS' });
         }
     }, {
         key: 'render',
         value: function render() {
+            var emails = this.props.emails.map(function (email) {
+                return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_3__Email__["a" /* default */], { key: email.name, email: email });
+            });
+
             return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                 'div',
                 null,
@@ -26875,7 +26904,7 @@ var Page = function (_React$Component) {
                 ),
                 __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                     'div',
-                    { style: { marginLeft: '33%' } },
+                    { style: { marginLeft: '33.3%' } },
                     __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                         'header',
                         { className: 'w3-center' },
@@ -26884,8 +26913,15 @@ var Page = function (_React$Component) {
                             null,
                             'Upload a file to see its data.'
                         ),
+                        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                            'button',
+                            { 'class': 'w3-button w3-red',
+                                onClick: this.clear },
+                            'Clear'
+                        ),
                         __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('form', { className: 'dropzone', method: 'POST', action: '/index.php' })
-                    )
+                    ),
+                    emails
                 )
             );
         }
@@ -26894,7 +26930,7 @@ var Page = function (_React$Component) {
     return Page;
 }(__WEBPACK_IMPORTED_MODULE_0_react___default.a.Component);
 
-/* harmony default export */ __webpack_exports__["a"] = (Page);
+/* harmony default export */ __webpack_exports__["a"] = (Object(__WEBPACK_IMPORTED_MODULE_1_react_redux__["b" /* connect */])(props)(Page));
 
 /***/ }),
 /* 141 */
@@ -30407,6 +30443,99 @@ function __guardMethod__(obj, methodName, transform) {
 }
 
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(31)(module)))
+
+/***/ }),
+/* 142 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+var initialState = {
+    emails: []
+};
+
+/* harmony default export */ __webpack_exports__["a"] = (function () {
+    var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : initialState;
+    var action = arguments[1];
+
+    switch (action.type) {
+        case 'SET_EMAIL':
+            state.emails.push(action.data);
+            break;
+        case 'CLEAR_EMAILS':
+            state.emails = [];
+            break;
+        default:
+            break;
+    }
+    return JSON.parse(JSON.stringify(state));
+});
+
+/***/ }),
+/* 143 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+
+
+var Email = function (_React$Component) {
+    _inherits(Email, _React$Component);
+
+    function Email(props) {
+        _classCallCheck(this, Email);
+
+        return _possibleConstructorReturn(this, (Email.__proto__ || Object.getPrototypeOf(Email)).call(this, props));
+    }
+
+    _createClass(Email, [{
+        key: "render",
+        value: function render() {
+            return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                "div",
+                { className: "w3-padding" },
+                __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                    "h3",
+                    null,
+                    "Email: ",
+                    this.props.email.name
+                ),
+                __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                    "p",
+                    null,
+                    this.props.email.to
+                ),
+                __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                    "p",
+                    null,
+                    this.props.email.from
+                ),
+                __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                    "p",
+                    null,
+                    this.props.email.date
+                ),
+                __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                    "p",
+                    null,
+                    this.props.email.subject
+                )
+            );
+        }
+    }]);
+
+    return Email;
+}(__WEBPACK_IMPORTED_MODULE_0_react___default.a.Component);
+
+/* harmony default export */ __webpack_exports__["a"] = (Email);
 
 /***/ })
 /******/ ]);

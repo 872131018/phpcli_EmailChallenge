@@ -93,30 +93,38 @@ class FileProcessor {
     /**
     * Logic for processing files
     */
-    public function processFile($file) {
+    public function processFile($file, $name) {
         /**
         * Open a file for reading
         */
         $open_file = fopen($file, "r");
+        $to = '';
+        $from = '';
         $date = '';
-        $sender = '';
         $subject = '';
+        $messageId = '';
         while(!feof($open_file)) {
             /**
             * Get a line to look for a piece of data
             */
             $current_line = fgets($open_file);
             /**
-            * Date:, From:, or Subject: at 0 should indicate relevant data
+            * To:, From:, Date:, or Subject: at 0 should indicate relevant data
             */
+            if(strpos($current_line, 'To:') === 0) {
+                $to = $current_line;
+            }
+            if(strpos($current_line, 'From:') === 0) {
+                $from = $current_line;
+            }
             if(strpos($current_line, 'Date:') === 0) {
                 $date = $current_line;
             }
-            if(strpos($current_line, 'From:') === 0) {
-                $sender = $current_line;
-            }
             if(strpos($current_line, 'Subject:') === 0) {
                 $subject = $current_line;
+            }
+            if(strpos($current_line, 'Message-ID:') === 0) {
+                $messageId = $current_line;
             }
         }
         /**
@@ -127,11 +135,12 @@ class FileProcessor {
         * Push data into final output
         */
         $output =  [
-            $file => [
-                'date' => $date,
-                'sender' => $sender,
-                'subject' => $subject
-            ]
+            'name' => $name,
+            'to' => $to,
+            'from' => $from,
+            'date' => $date,
+            'subject' => $subject,
+            'messageId' => $messageId
         ];
         return $output;
     }
