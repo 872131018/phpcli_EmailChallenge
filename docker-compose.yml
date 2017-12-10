@@ -1,0 +1,18 @@
+version: "2"
+services:
+    nginx:
+        container_name: nginx
+        build:
+            context: ./nginx
+        ports:
+            - 80:80
+        links:
+            - fpm
+        volumes:
+            - ./src/public:/var/www/html/public
+    fpm:
+        container_name: fpm
+        build:
+            context: ./fpm
+        volumes:
+            - ./src:/var/www/html

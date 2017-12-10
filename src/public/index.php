@@ -1,8 +1,8 @@
 <?php
     /**
-    * Require block
+    * Require block #misslaravelalready
     */
-    require('./FileProcessor.php');
+    require('../FileProcessor.php');
 
     echo 'Starting Execution...';
     echo PHP_EOL;
