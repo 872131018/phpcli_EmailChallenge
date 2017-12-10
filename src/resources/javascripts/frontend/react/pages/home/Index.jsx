@@ -1,8 +1,4 @@
 import React from 'react';
-import Content from './Content';
-import Languages from './languages/Languages';
-import Tools from './tools/Tools';
-import Analytics from '../../global/Analytics';
 
 class Page extends React.Component {
     constructor(props) {
@@ -12,10 +8,17 @@ class Page extends React.Component {
     render() {
         return (
             <div>
-                <Content/>
-                <Languages/>
-                <Tools/>
-                <Analytics page="Home"/>
+                <div className="w3-sidebar w3-third">
+                    <div className="bgimg"></div>
+                </div>
+                <div style={{ marginLeft: '33%' }}>
+                    <header className="w3-center">
+                        <p>Upload a file to see its data.</p>
+                        <button className="w3-button w3-light-grey w3-padding-large w3-margin-top">
+                            <i className="fa fa-download"></i> Download Resume
+                        </button>
+                    </header>
+                </div>
             </div>
         );
     }

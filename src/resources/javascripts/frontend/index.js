@@ -1,10 +1,9 @@
 import axios from 'axios';
-axios.defaults.baseURL = window.baseUrl;
-axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-axios.defaults.headers.common['X-CSRF-Token'] = document.head.querySelector('meta[name="csrf-token"]').content;
+//axios.defaults.baseURL = window.baseUrl;
+axios.defaults.baseURL = 'http://localhost';
+//axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+//axios.defaults.headers.common['X-CSRF-Token'] = document.head.querySelector('meta[name="csrf-token"]').content;
 window.axios = axios;
-
-window.initialize = require('./map.js');
 
 import Store from './root.redux';
 window.store = Store
