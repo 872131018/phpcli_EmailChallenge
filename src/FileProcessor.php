@@ -1,95 +1,59 @@
 <?php
 class FileProcessor {
-    private $files_in_directory;
-    private $root_directory;
-
-    function __construct($directory, $root) {
-        $this->files_in_directory = scandir($directory);
-        $this->root_directory = $root;
+    function __construct() {
+        /*
+        * Used to do some stuff here when the project was CLI based
+        */
     }
     /**
     * Convert email archive to readable json output with data
     */
-    public function processFiles() {
+    public function processArchive($file, $name) {
         /**
-        * Browse current directory for the archive
+        * Interface for archive files and the like
         */
-        foreach($this->files_in_directory as $index => $file) {
-            /**
-            * Check for file archive
+        try {
+            /*
+            * Ensure uploaded filed gets a valid extension
             */
-            if($this->fileArchiveCheck($file)) {
-                /**
-                * Interface for archive files and the like
-                */
-                try {
-                    $archive = new PharData($file);
-                    /**
-                    * Decompress the archive
-                    */
-                    $archive->decompress()->extractTo('email_archive');
-                    /**
-                    * On successful extract go into archive directory
-                    */
-                    chdir('email_archive');
-                    /**
-                    * Extracted archive could have a different name than .tar file
-                    */
-                    $files_in_directory = scandir(getcwd());
-                    /**
-                    * Name agnostic way to get into files after extraction
-                    */
-                    foreach ($files_in_directory as $index => $file) {
-                        /**
-                        * Go into archive and prepare to process
-                        */
-                        if($file != '.' && $file != '..') {
-                            chdir($file);
-                            /**
-                            * Get array of files in archive
-                            */
-                            $files_in_directory = scandir(getcwd());
-                            /**
-                            * Create list of email files to process
-                            */
-                            $archived_emails = [];
-                            foreach ($files_in_directory as $index => $file) {
-                                if(strpos($file, '.msg')) {
-                                    array_push($archived_emails, $file);
-                                }
-                            }
-                            /**
-                            * Now process each email and get
-                            */
-                            $final_output = [];
-                            foreach ($archived_emails as $index => $file) {
-                                array_push($final_output, $this->processFile($file));
-                            }
-                            /**
-                            * @TODO: per spec push into a file in a meaningful way
-                            */
-                            $json_file = fopen($this->root_directory."/processedEmailData.json", "w");
-                            fwrite($json_file, json_encode($final_output, JSON_PRETTY_PRINT));
-                            fclose($json_file);
-                        }
-                    }
-                } catch(Exception $e) {
-                    echo 'Error Encountered!!!';
-                    echo PHP_EOL;
-                    print_r($e);
+            $temp_name = $file.'.tgz';
+            move_uploaded_file($file, $temp_name);
+            $archive = new PharData($temp_name);
+            /**
+            * Decompress the archive
+            */
+            $directory = '/tmp';
+            $archive->decompress()->extractTo($directory, null, true);
+            /**
+            * Get files in archive
+            * @TODO: add a loop to get the name of the compressed directory
+            */
+            $files = scandir($directory.'/smallset');
+            /**
+            * Look for files that don't conform (aka ninja traps)
+            */
+            $valid = [];
+            foreach ($files as $index => $file) {
+                if(pathinfo($file, PATHINFO_EXTENSION) == 'msg') {
+                    array_push($valid, $file);
                 }
             }
+            /**
+            * Now process each email
+            */
+            $output = [];
+            foreach ($valid as $index => $file) {
+                array_push($output, $this->processFile("$directory/smallset/$file", $name));
+            }
+
+            return $output;
+        } catch(Exception $e) {
+            echo 'Error Encountered!!!';
+            echo PHP_EOL;
+            print_r($e);
         }
     }
-    /**
-    * Function to check for variations of archive file type
-    */
-    private function fileArchiveCheck($filename) {
-        /**
-        * Could check for other formats here
-        */
-        return strpos($filename, '.tar.gz');
-    }
+
     /**
     * Logic for processing files
     */

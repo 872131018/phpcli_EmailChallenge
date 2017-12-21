@@ -23,6 +23,7 @@ class Page extends React.Component {
             store.dispatch({ type: 'SERVICE_LOADING' });
         });
         dz.on('success', (file, response) => {
+            console.log(response)
             store.dispatch({ type: 'SERVICE_FINISHED' });
             store.dispatch({ type: 'SET_EMAIL', data: JSON.parse(response) });
         });
@@ -45,7 +46,7 @@ class Page extends React.Component {
                 <div style={{ marginLeft: '33.3%' }}>
                     <header className="w3-center">
                         <p>Upload a file to see its data.</p>
-                        <button class="w3-button w3-red"
+                        <button className="w3-button w3-red"
                             onClick={ this.clear }>Clear
                         </button>
                         <form className="dropzone" method="POST" action="/index.php"/>
